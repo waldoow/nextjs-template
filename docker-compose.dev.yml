@@ -1,0 +1,63 @@
+services:
+  app:
+    container_name: ${APP_CONTAINER_NAME}
+    build:
+      context: ./application
+      dockerfile: dev.Dockerfile
+    environment:
+      ENV_VARIABLE: ${ENV_VARIABLE}
+    env_file:
+      - .env
+    command: npm run dev
+    restart: always
+    develop:
+      watch:
+        - path: ./application/app
+          action: sync
+          target: /app/app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+    volumes:
+      - ./application/.next:/app/.next
+    ports:
+      - 3000:3000
+    networks:
+      - ${DOCKER_NETWORK}
+
+  postgres:
+    env_file:
+      - .env
+    container_name: ${DB_CONTAINER_NAME}
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - ${DOCKER_NETWORK}
+
+  pgadmin:
+    env_file:
+      - .env
+    container_name: ${PGADMIN_CONTAINER_NAME}
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      - postgres
+    ports:
+      - 5050:80
+    networks:
+      - ${DOCKER_NETWORK}
+
+networks:
+  docker_network:
