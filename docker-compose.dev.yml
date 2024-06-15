@@ -19,8 +19,7 @@ services:
             - node_modules/
         - action: rebuild
           path: package.json
-    volumes:
-      - ./application/.next:/app/.next
+
     ports:
       - 3000:3000
     networks:
